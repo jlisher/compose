@@ -4,9 +4,9 @@ import os
 import re
 import sys
 
-import pkg_resources
 from setuptools import find_packages
 from setuptools import setup
+from packaging import markers
 
 
 def read(*parts):
@@ -24,42 +24,40 @@ def find_version(*file_paths):
     raise RuntimeError("Unable to find version string.")
 
 
+def evaluate_marker(text):
+    try:
+        return markers.Marker(text).evaluate()
+    except markers.InvalidMarker as e:
+        raise SyntaxError(e) from e
+
+
 install_requires = [
     'docopt >= 0.6.1, < 1',
-    'PyYAML >= 3.10, < 6',
+    'PyYAML >= 3.10, < 7',
     'requests >= 2.20.0, < 3',
     'texttable >= 0.9.0, < 2',
     'websocket-client >= 0.32.0, < 1',
     'distro >= 1.5.0, < 2',
     'docker[ssh] >= 5',
     'dockerpty >= 0.4.1, < 1',
-    'jsonschema >= 2.5.1, < 4',
+    'jsonschema >= 2.5.1, < 5',
     'python-dotenv >= 0.13.0, < 1',
 ]
 
-
 tests_require = [
     'ddt >= 1.2.2, < 2',
-    'pytest < 6',
+    'pytest < 8',
 ]
 
-
-if sys.version_info[:2] < (3, 4):
-    tests_require.append('mock >= 1.0.1, < 4')
-
 extras_require = {
-    ':python_version < "3.5"': ['backports.ssl_match_hostname >= 3.5, < 4'],
-    ':python_version < "3.8"': ['cached-property >= 1.2.0, < 2'],
-    ':sys_platform == "win32"': ['colorama >= 0.4, < 1'],
     'socks': ['PySocks >= 1.5.6, != 1.5.7, < 2'],
     'tests': tests_require,
 }
 
-
 try:
     if 'bdist_wheel' not in sys.argv:
         for key, value in extras_require.items():
-            if key.startswith(':') and pkg_resources.evaluate_marker(key[1:]):
+            if key.startswith(':') and evaluate_marker(key[1:]):
                 install_requires.extend(value)
 except Exception as e:
     print("Failed to compute platform dependencies: {}. ".format(e) +
@@ -67,7 +65,6 @@ except Exception as e:
     for key, value in extras_require.items():
         if key.startswith(':'):
             install_requires.extend(value)
-
 
 setup(
     name='docker-compose',
@@ -89,7 +86,7 @@ setup(
     install_requires=install_requires,
     extras_require=extras_require,
     tests_require=tests_require,
-    python_requires='>=3.4',
+    python_requires='>=3.8',
     entry_points={
         'console_scripts': ['docker-compose=compose.cli.main:main'],
     },
@@ -99,10 +96,9 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
     ],
 )

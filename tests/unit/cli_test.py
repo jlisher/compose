@@ -1,10 +1,11 @@
+import contextlib
 import os
 import shutil
 import tempfile
 from io import StringIO
+from pathlib import Path
 
 import docker
-import py
 import pytest
 from docker.constants import DEFAULT_DOCKER_API_VERSION
 
@@ -23,11 +24,21 @@ from compose.container import Container
 from compose.project import Project
 
 
+@contextlib.contextmanager
+def working_directory(path):
+    cwd = Path.cwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(cwd)
+
+
 class CLITestCase(unittest.TestCase):
 
     def test_default_project_name(self):
-        test_dir = py._path.local.LocalPath('tests/fixtures/simple-composefile')
-        with test_dir.as_cwd():
+        test_dir = Path('tests/fixtures/simple-composefile')
+        with working_directory(test_dir):
             project_name = get_project_name('.')
             assert 'simple-composefile' == project_name
 

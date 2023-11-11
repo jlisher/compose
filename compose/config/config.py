@@ -11,11 +11,6 @@ from operator import itemgetter
 
 import yaml
 
-try:
-    from functools import cached_property
-except ImportError:
-    from cached_property import cached_property
-
 from . import types
 from ..const import COMPOSE_SPEC as VERSION
 from ..const import COMPOSEFILE_V1 as V1
@@ -195,14 +190,14 @@ class ConfigFile(namedtuple('_ConfigFile', 'filename config')):
     def from_filename(cls, filename):
         return cls(filename, load_yaml(filename))
 
-    @cached_property
+    @functools.cached_property
     def config_version(self):
         version = self.config.get('version', None)
         if isinstance(version, dict):
             return V1
         return ComposeVersion(version) if version else self.version
 
-    @cached_property
+    @functools.cached_property
     def version(self):
         version = self.config.get('version', None)
         if not version:

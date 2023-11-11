@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -ex
+
+pip3 install -q -r requirements-build.txt
+
+export PATH="${PWD}/pyinstaller:${PATH}"
+
+mkdir -p dist
+pyinstaller docker-compose.spec
+ldd dist/docker-compose
+
+./dist/docker-compose version
